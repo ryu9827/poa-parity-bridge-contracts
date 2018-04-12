@@ -4,9 +4,6 @@ group: beta
 language: node_js
 node_js:
   - "8"
-env:
-  -
-  - SOLIDITY_COVERAGE=true
 install:
   - npm install -g truffle
   - npm install -g ethereumjs-testrpc
