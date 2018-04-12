@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "coveralls": "^3.0.0",
     "ganache-cli": "^6.1.0",
     "nodemon": "^1.17.2",
     "solidity-coverage": "^0.4.15",
