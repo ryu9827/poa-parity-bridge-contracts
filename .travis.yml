@@ -16,7 +16,7 @@ matrix:
   allow_failures:
     - env: SOLIDITY_COVERAGE=true
 before_script:
-  - testrpc > /dev/null &
+  - testrpc --port 7545 > /dev/null &
   - sleep 5
 script:
   - npm test
