@@ -19,17 +19,17 @@ contract('HomeBridge', async (accounts) => {
     })
     it('sets variables', async () => {
       ZERO_ADDRESS.should.be.equal(await homeContract.validatorContract.call())
-      '0'.should.be.bignumber.equal(await homeContract.deployedAtBlock())
-      '0'.should.be.bignumber.equal(await homeContract.homeDailyLimit())
-      '0'.should.be.bignumber.equal(await homeContract.maxPerTx())
-      false.should.be.equal(await homeContract.isInitialized())
+      '0'.should.be.bignumber.equal(await homeContract.deployedAtBlock.call())
+      '0'.should.be.bignumber.equal(await homeContract.homeDailyLimit.call())
+      '0'.should.be.bignumber.equal(await homeContract.maxPerTx.call())
+      false.should.be.equal(await homeContract.isInitialized.call())
       await homeContract.initialize(validatorContract.address, '3', '2', '1').should.be.fulfilled;
-      true.should.be.equal(await homeContract.isInitialized())
-      validatorContract.address.should.be.equal(await homeContract.validatorContract());
-      (await homeContract.deployedAtBlock()).should.be.bignumber.above(0);
-      '3'.should.be.bignumber.equal(await homeContract.homeDailyLimit())
-      '2'.should.be.bignumber.equal(await homeContract.maxPerTx())
-      '1'.should.be.bignumber.equal(await homeContract.minPerTx())
+      true.should.be.equal(await homeContract.isInitialized.call())
+      validatorContract.address.should.be.equal(await homeContract.validatorContract.call());
+      (await homeContract.deployedAtBlock.call()).should.be.bignumber.above(0);
+      '3'.should.be.bignumber.equal(await homeContract.homeDailyLimit.call())
+      '2'.should.be.bignumber.equal(await homeContract.maxPerTx.call())
+      '1'.should.be.bignumber.equal(await homeContract.minPerTx.call())
     })
     it('cant set maxPerTx > homeDailyLimit', async () => {
       false.should.be.equal(await homeContract.isInitialized.call())
@@ -45,9 +45,9 @@ contract('HomeBridge', async (accounts) => {
       let finalContract = await HomeBridge.at(storageProxy.address);
       true.should.be.equal(await finalContract.isInitialized.call());
       validatorContract.address.should.be.equal(await finalContract.validatorContract.call())
-      "3".should.be.bignumber.equal(await finalContract.homeDailyLimit())
-      "2".should.be.bignumber.equal(await finalContract.maxPerTx())
-      "1".should.be.bignumber.equal(await finalContract.minPerTx())
+      "3".should.be.bignumber.equal(await finalContract.homeDailyLimit.call())
+      "2".should.be.bignumber.equal(await finalContract.maxPerTx.call())
+      "1".should.be.bignumber.equal(await finalContract.minPerTx.call())
     })
   })
 
@@ -57,13 +57,13 @@ contract('HomeBridge', async (accounts) => {
       await homeContract.initialize(validatorContract.address, '3', '2', '1')
     })
     it('should accept POA', async () => {
-      const currentDay = await homeContract.getCurrentDay()
-      '0'.should.be.bignumber.equal(await homeContract.totalSpentPerDay(currentDay))
+      const currentDay = await homeContract.getCurrentDay.call()
+      '0'.should.be.bignumber.equal(await homeContract.totalSpentPerDay.call(currentDay))
       const {logs} = await homeContract.sendTransaction({
         from: accounts[1],
         value: 1
       }).should.be.fulfilled
-      '1'.should.be.bignumber.equal(await homeContract.totalSpentPerDay(currentDay))
+      '1'.should.be.bignumber.equal(await homeContract.totalSpentPerDay.call(currentDay))
       await homeContract.sendTransaction({
         from: accounts[1],
         value: 3
@@ -78,7 +78,7 @@ contract('HomeBridge', async (accounts) => {
         from: accounts[1],
         value: 1
       }).should.be.fulfilled
-      '2'.should.be.bignumber.equal(await homeContract.totalSpentPerDay(currentDay))
+      '2'.should.be.bignumber.equal(await homeContract.totalSpentPerDay.call(currentDay))
     })
 
     it('doesnt let you send more than max amount per tx', async () => {
@@ -130,7 +130,7 @@ contract('HomeBridge', async (accounts) => {
       const oneEther = web3.toBigNumber(web3.toWei(1, "ether"));
       const halfEther = web3.toBigNumber(web3.toWei(0.5, "ether"));
       await homeContract.initialize(validatorContract.address, oneEther, halfEther, minPerTx);
-      oneEther.should.be.bignumber.equal(await homeContract.homeDailyLimit());
+      oneEther.should.be.bignumber.equal(await homeContract.homeDailyLimit.call());
       await homeContract.sendTransaction({
         from: accounts[1],
         value: halfEther
@@ -146,7 +146,7 @@ contract('HomeBridge', async (accounts) => {
       var message = createMessage(recipientAccount, value, transactionHash, homeGasPrice);
       var signature = await sign(authorities[0], message)
       var vrs = signatureToVRS(signature);
-      false.should.be.equal(await homeContract.withdraws(transactionHash))
+      false.should.be.equal(await homeContract.withdraws.call(transactionHash))
       const {logs} = await homeContract.withdraw([vrs.v], [vrs.r], [vrs.s], message).should.be.fulfilled
       logs[0].event.should.be.equal("Withdraw")
       logs[0].args.recipient.should.be.equal(recipientAccount)
@@ -156,7 +156,7 @@ contract('HomeBridge', async (accounts) => {
       const homeBalanceAfter = await web3.eth.getBalance(homeContract.address)
       balanceAfter.should.be.bignumber.equal(balanceBefore.add(value))
       homeBalanceAfter.should.be.bignumber.equal(homeBalanceBefore.sub(value))
-      true.should.be.equal(await homeContract.withdraws(transactionHash))
+      true.should.be.equal(await homeContract.withdraws.call(transactionHash))
     })
     it('should allow second withdraw with different transactionHash but same recipient and value', async ()=> {
       var recipientAccount = accounts[3];
@@ -169,14 +169,14 @@ contract('HomeBridge', async (accounts) => {
       var message = createMessage(recipientAccount, value, transactionHash, homeGasPrice);
       var signature = await sign(authorities[0], message)
       var vrs = signatureToVRS(signature);
-      false.should.be.equal(await homeContract.withdraws(transactionHash))
+      false.should.be.equal(await homeContract.withdraws.call(transactionHash))
       await homeContract.withdraw([vrs.v], [vrs.r], [vrs.s], message).should.be.fulfilled
       // tx 2
       var transactionHash2 = "0x77a496628a776a03d58d7e6059a5937f04bebd8ba4ff89f76dd4bb8ba7e291ee";
       var message2 = createMessage(recipientAccount, value, transactionHash2, homeGasPrice);
       var signature2 = await sign(authorities[0], message2)
       var vrs2 = signatureToVRS(signature2);
-      false.should.be.equal(await homeContract.withdraws(transactionHash2))
+      false.should.be.equal(await homeContract.withdraws.call(transactionHash2))
       const {logs} = await homeContract.withdraw([vrs2.v], [vrs2.r], [vrs2.s], message2).should.be.fulfilled
 
       logs[0].event.should.be.equal("Withdraw")
@@ -187,8 +187,8 @@ contract('HomeBridge', async (accounts) => {
       const homeBalanceAfter = await web3.eth.getBalance(homeContract.address)
       balanceAfter.should.be.bignumber.equal(balanceBefore.add(value.mul(2)))
       homeBalanceAfter.should.be.bignumber.equal(0)
-      true.should.be.equal(await homeContract.withdraws(transactionHash))
-      true.should.be.equal(await homeContract.withdraws(transactionHash2))
+      true.should.be.equal(await homeContract.withdraws.call(transactionHash))
+      true.should.be.equal(await homeContract.withdraws.call(transactionHash2))
     })
 
     it('should not allow if there are not enough funds in the contract', async () => {
@@ -202,7 +202,7 @@ contract('HomeBridge', async (accounts) => {
       var message = createMessage(recipientAccount, value, transactionHash, homeGasPrice);
       var signature = await sign(authorities[0], message)
       var vrs = signatureToVRS(signature);
-      false.should.be.equal(await homeContract.withdraws(transactionHash))
+      false.should.be.equal(await homeContract.withdraws.call(transactionHash))
       await homeContract.withdraw([vrs.v], [vrs.r], [vrs.s], message).should.be.rejectedWith(ERROR_MSG)
 
     })
@@ -217,13 +217,13 @@ contract('HomeBridge', async (accounts) => {
       var message = createMessage(recipientAccount, value, transactionHash, homeGasPrice);
       var signature = await sign(authorities[0], message)
       var vrs = signatureToVRS(signature);
-      false.should.be.equal(await homeContract.withdraws(transactionHash))
+      false.should.be.equal(await homeContract.withdraws.call(transactionHash))
       await homeContract.withdraw([vrs.v], [vrs.r], [vrs.s], message).should.be.fulfilled
       // tx 2
       var message2 = createMessage(accounts[4], value, transactionHash, homeGasPrice);
       var signature2 = await sign(authorities[0], message2)
       var vrs = signatureToVRS(signature2);
-      true.should.be.equal(await homeContract.withdraws(transactionHash))
+      true.should.be.equal(await homeContract.withdraws.call(transactionHash))
       await homeContract.withdraw([vrs.v], [vrs.r], [vrs.s], message2).should.be.rejectedWith(ERROR_MSG)
     })
   })

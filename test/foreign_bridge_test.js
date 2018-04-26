@@ -48,7 +48,7 @@ contract('ForeignBridge', async (accounts) => {
 
       true.should.be.equal(await foreignBridge.isInitialized.call())
       validatorContract.address.should.be.equal(await foreignBridge.validatorContract.call());
-      (await foreignBridge.deployedAtBlock()).should.be.bignumber.above(0);
+      (await foreignBridge.deployedAtBlock.call()).should.be.bignumber.above(0);
       oneEther.should.be.bignumber.equal(await foreignBridge.foreignDailyLimit.call())
       halfEther.should.be.bignumber.equal(await foreignBridge.maxPerTx.call())
       minPerTx.should.be.bignumber.equal(await foreignBridge.minPerTx.call())
@@ -250,7 +250,7 @@ contract('ForeignBridge', async (accounts) => {
       var message = createMessage(recipientAccount, value, transactionHash, homeGasPrice);
       var signature = await sign(authoritiesTwoAccs[0], message)
       var signature2 = await sign(authoritiesTwoAccs[1], message)
-      '2'.should.be.bignumber.equal(await validatorContractWith2Signatures.requiredSignatures());
+      '2'.should.be.bignumber.equal(await validatorContractWith2Signatures.requiredSignatures.call());
       await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[0]}).should.be.fulfilled;
       await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[0]}).should.be.rejectedWith(ERROR_MSG);
       await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[1]}).should.be.rejectedWith(ERROR_MSG);
@@ -341,9 +341,9 @@ contract('ForeignBridge', async (accounts) => {
       let finalContract = await ForeignBridge.at(storageProxy.address);
       true.should.be.equal(await finalContract.isInitialized.call());
       fakeValidatorsAddress.should.be.equal(await finalContract.validatorContract.call())
-      FOREIGN_DAILY_LIMIT.should.be.bignumber.equal(await finalContract.foreignDailyLimit())
-      FOREIGN_MAX_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.maxPerTx())
-      FOREIGN_MIN_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.minPerTx())
+      FOREIGN_DAILY_LIMIT.should.be.bignumber.equal(await finalContract.foreignDailyLimit.call())
+      FOREIGN_MAX_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.maxPerTx.call())
+      FOREIGN_MIN_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.minPerTx.call())
     })
   })
 })
