@@ -84,7 +84,7 @@ contract('ForeignBridge', async (accounts) => {
 
       const msgHash = Web3Utils.soliditySha3(recipient, value, transactionHash);
       const senderHash = Web3Utils.soliditySha3(authorities[0], msgHash)
-      true.should.be.equal(await foreignBridge.depositsSigned(senderHash))
+      true.should.be.equal(await foreignBridge.depositsSigned.call(senderHash))
     })
     it('test with 2 signatures required', async () => {
       let validatorContractWith2Signatures = await BridgeValidators.new()
@@ -234,13 +234,13 @@ contract('ForeignBridge', async (accounts) => {
       const {logs} = await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[0]}).should.be.fulfilled;
       logs[0].event.should.be.equal('SignedForWithdraw')
       const msgHashFromLog = logs[0].args.messageHash
-      const signatureFromContract = await foreignBridgeWithTwoSigs.signature(msgHashFromLog, 0);
+      const signatureFromContract = await foreignBridgeWithTwoSigs.signature.call(msgHashFromLog, 0);
       const messageFromContract = await foreignBridgeWithTwoSigs.message(msgHashFromLog);
       signature.should.be.equal(signatureFromContract);
       messageFromContract.should.be.equal(messageFromContract);
       const hashMsg = Web3Utils.soliditySha3(message);
       const hashSenderMsg = Web3Utils.soliditySha3(authorities[0], hashMsg)
-      true.should.be.equal(await foreignBridgeWithTwoSigs.messagesSigned(hashSenderMsg));
+      true.should.be.equal(await foreignBridgeWithTwoSigs.messagesSigned.call(hashSenderMsg));
     })
     it('when enough requiredSignatures are collected, CollectedSignatures event is emitted', async () => {
       var recipientAccount = accounts[8]
@@ -250,7 +250,7 @@ contract('ForeignBridge', async (accounts) => {
       var message = createMessage(recipientAccount, value, transactionHash, homeGasPrice);
       var signature = await sign(authoritiesTwoAccs[0], message)
       var signature2 = await sign(authoritiesTwoAccs[1], message)
-      '2'.should.be.bignumber.equal(await validatorContractWith2Signatures.requiredSignatures());
+      '2'.should.be.bignumber.equal(await validatorContractWith2Signatures.requiredSignatures.call());
       await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[0]}).should.be.fulfilled;
       await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[0]}).should.be.rejectedWith(ERROR_MSG);
       await foreignBridgeWithTwoSigs.submitSignature(signature, message, {from: authorities[1]}).should.be.rejectedWith(ERROR_MSG);
@@ -339,11 +339,11 @@ contract('ForeignBridge', async (accounts) => {
         fakeValidatorsAddress, fakeTokenAddress, FOREIGN_DAILY_LIMIT, FOREIGN_MAX_AMOUNT_PER_TX, FOREIGN_MIN_AMOUNT_PER_TX).params[0].data
       await storageProxy.upgradeToAndCall('0', foreignBridge.address, data).should.be.fulfilled;
       let finalContract = await ForeignBridge.at(storageProxy.address);
-      true.should.be.equal(await finalContract.isInitialized());
-      fakeValidatorsAddress.should.be.equal(await finalContract.validatorContract())
-      FOREIGN_DAILY_LIMIT.should.be.bignumber.equal(await finalContract.foreignDailyLimit())
-      FOREIGN_MAX_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.maxPerTx())
-      FOREIGN_MIN_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.minPerTx())
+      true.should.be.equal(await finalContract.isInitialized.call());
+      fakeValidatorsAddress.should.be.equal(await finalContract.validatorContract.call())
+      FOREIGN_DAILY_LIMIT.should.be.bignumber.equal(await finalContract.foreignDailyLimit.call())
+      FOREIGN_MAX_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.maxPerTx.call())
+      FOREIGN_MIN_AMOUNT_PER_TX.should.be.bignumber.equal(await finalContract.minPerTx.call())
     })
   })
 })
