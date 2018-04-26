@@ -12,7 +12,7 @@ contract('BridgeValidators', async (accounts) => {
   describe('#initialize', async () => {
     it('sets values', async () => {
       // function initialize(uint256 _requiredSignatures, address[] _initialValidators, address _owner) public {
-      '0x0000000000000000000000000000000000000000'.should.be.equal(await bridgeValidators.owner())
+      '0x0000000000000000000000000000000000000000'.should.be.equal(await bridgeValidators.owner.call())
       '0'.should.be.bignumber.equal(await bridgeValidators.validatorCount())
       false.should.be.equal(await bridgeValidators.isValidator(accounts[0]))
       false.should.be.equal(await bridgeValidators.isValidator(accounts[1]))
@@ -130,7 +130,7 @@ contract('BridgeValidators', async (accounts) => {
       let data = bridgeValidators.initialize.request(required_signatures, validators, owner).params[0].data
       await storageProxy.upgradeToAndCall('0', bridgeValidators.address, data).should.be.fulfilled;
       let finalContract = await BridgeValidators.at(storageProxy.address);
-      true.should.be.equal(await finalContract.isInitialized());
+      true.should.be.equal(await finalContract.isInitialized.call());
       required_signatures.should.be.bignumber.equal(await finalContract.requiredSignatures())
 
       true.should.be.equal(await finalContract.isValidator(validators[0]))
