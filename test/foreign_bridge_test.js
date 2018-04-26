@@ -39,19 +39,19 @@ contract('ForeignBridge', async (accounts) => {
       token = await POA20.new("POA ERC20 Foundation", "POA20", 18);
       let foreignBridge =  await ForeignBridge.new();
 
-      ZERO_ADDRESS.should.be.equal(await foreignBridge.validatorContract())
-      '0'.should.be.bignumber.equal(await foreignBridge.deployedAtBlock())
-      '0'.should.be.bignumber.equal(await foreignBridge.foreignDailyLimit())
-      '0'.should.be.bignumber.equal(await foreignBridge.maxPerTx())
-      false.should.be.equal(await foreignBridge.isInitialized())
+      ZERO_ADDRESS.should.be.equal(await foreignBridge.validatorContract.call())
+      '0'.should.be.bignumber.equal(await foreignBridge.deployedAtBlock.call())
+      '0'.should.be.bignumber.equal(await foreignBridge.foreignDailyLimit.call())
+      '0'.should.be.bignumber.equal(await foreignBridge.maxPerTx.call())
+      false.should.be.equal(await foreignBridge.isInitialized.call())
       await foreignBridge.initialize(validatorContract.address, token.address, oneEther, halfEther, minPerTx);
 
-      true.should.be.equal(await foreignBridge.isInitialized())
-      validatorContract.address.should.be.equal(await foreignBridge.validatorContract());
-      (await foreignBridge.deployedAtBlock()).should.be.bignumber.above(0);
-      oneEther.should.be.bignumber.equal(await foreignBridge.foreignDailyLimit())
-      halfEther.should.be.bignumber.equal(await foreignBridge.maxPerTx())
-      minPerTx.should.be.bignumber.equal(await foreignBridge.minPerTx())
+      true.should.be.equal(await foreignBridge.isInitialized.call())
+      validatorContract.address.should.be.equal(await foreignBridge.validatorContract.call());
+      (await foreignBridge.deployedAtBlock.call()).should.be.bignumber.above(0);
+      oneEther.should.be.bignumber.equal(await foreignBridge.foreignDailyLimit.call())
+      halfEther.should.be.bignumber.equal(await foreignBridge.maxPerTx.call())
+      minPerTx.should.be.bignumber.equal(await foreignBridge.minPerTx.call())
     })
   })
 

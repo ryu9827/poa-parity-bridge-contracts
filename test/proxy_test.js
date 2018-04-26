@@ -44,13 +44,13 @@ contract('EternalStorageProxy', async ([owner, investor, stranger, trusted, vali
     await eternalStorageProxy.upgradeTo('2', bridgeValidator.address).should.be.rejectedWith(ERROR_MSG);
   })
 
-  it.only('upgradeToAndCall function can only be called by the proxy owner', async () => {
+  it('upgradeToAndCall function can only be called by the proxy owner', async () => {
     let bridgeValidator = await BridgeValidators.new();
     let initData = await bridgeValidator.contract.initialize.getData(1, [validator1], trusted);
     await eternalStorageProxy.upgradeToAndCall('1', bridgeValidator.address, initData, { from: stranger }).should.be.rejectedWith(ERROR_MSG);
   })
 
-  it.only('upgradeToAndCall function calls the fallback function', async () => {
+  it('upgradeToAndCall function calls the fallback function', async () => {
     let bridgeValidator = await BridgeValidators.new();
     let initData = await bridgeValidator.contract.initialize.getData(1, [validator1], owner);
     await eternalStorageProxy.upgradeToAndCall('1', bridgeValidator.address, initData);
