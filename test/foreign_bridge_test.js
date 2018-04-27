@@ -1,9 +1,10 @@
-const ForeignBridge = artifacts.require("ForeignBridge.sol");
+const ForeignBridge = artifacts.require("ForeignBridgeMock.sol");
 const ForeignBridgeV2 = artifacts.require("ForeignBridgeV2.sol");
 const BridgeValidators = artifacts.require("BridgeValidators.sol");
 const EternalStorageProxy = artifacts.require("EternalStorageProxy.sol");
+const assertRevert = require('./helpers/assertRevert');
 
-const POA20 = artifacts.require("POA20.sol");
+const POA20 = artifacts.require("POA20Mock.sol");
 const {ERROR_MSG, ZERO_ADDRESS} = require('./setup');
 const {createMessage, sign, signatureToVRS, strip0x} = require('./helpers/helpers');
 const oneEther = web3.toBigNumber(web3.toWei(1, "ether"));
@@ -374,9 +375,9 @@ contract('ForeignBridge', async (accounts) => {
       foreignBridge = await ForeignBridge.new();
       await foreignBridge.initialize(validatorContract.address, token.address, oneEther, halfEther, minPerTx);
       await token.transferOwnership(foreignBridge.address)
-
+      
       let tokenSecond = await POA20.new("Roman Token", "RST", 18);
-
+      
       await tokenSecond.mint(accounts[0], 500).should.be.fulfilled;
       '500'.should.be.bignumber.equal(await tokenSecond.balanceOf(accounts[0]))
       await tokenSecond.transfer(foreignBridge.address, '350');
@@ -384,10 +385,18 @@ contract('ForeignBridge', async (accounts) => {
       '0'.should.be.bignumber.equal(await tokenSecond.balanceOf(accounts[0]))
       '350'.should.be.bignumber.equal(await tokenSecond.balanceOf(foreignBridge.address))
       '150'.should.be.bignumber.equal(await tokenSecond.balanceOf(token.address))
-
+      
       await foreignBridge.claimTokens(tokenSecond.address, accounts[3], {from: owner});
       '0'.should.be.bignumber.equal(await tokenSecond.balanceOf(foreignBridge.address))
       '500'.should.be.bignumber.equal(await tokenSecond.balanceOf(accounts[3]))
+      
+      await assertRevert(foreignBridge.claimTokens(foreignBridge.address, ZERO_ADDRESS, {from: owner} )) ;
+  
+      let ethBalanceOfAccount_1 = web3.eth.getBalance(accounts[1]).toNumber();
+      let ethBalanceOfContract  = web3.eth.getBalance(foreignBridge.address).toNumber();
+      web3.eth.sendTransaction({from: accounts[5], to: foreignBridge.address, value: halfEther *10 });    
+      await foreignBridge.claimTokens(ZERO_ADDRESS, accounts[1], { from: owner});
+      assert.equal( web3.eth.getBalance(accounts[1]).toNumber() , ethBalanceOfAccount_1 + halfEther *10 )
     })
   })
 })
