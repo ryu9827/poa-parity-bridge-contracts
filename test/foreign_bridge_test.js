@@ -121,6 +121,59 @@ contract('ForeignBridge', async (accounts) => {
       oneEther.should.be.bignumber.equal(await tokenPOA20.totalSupply());
       oneEther.should.be.bignumber.equal(await tokenPOA20.balanceOf(recipient));
     })
+
+    it('test with 10 signatures required', async () => {
+      let validatorContractWith10Signatures = await BridgeValidators.new()
+      let authoritiesAccs = [
+        accounts[1],
+        accounts[2],
+        accounts[3],
+        accounts[4],
+        accounts[5],
+        accounts[6],
+        accounts[7],
+        accounts[8],
+        accounts[9],
+        accounts[10]
+      ];
+      let ownerOfValidators = accounts[0]
+      await validatorContractWith10Signatures.initialize(10, authoritiesAccs, ownerOfValidators)
+      let tokenPOA20 = await POA20.new("POA ERC20 Foundation", "POA20", 18);
+      let foreignBridgeWithTenSigs = await ForeignBridge.new();
+      await foreignBridgeWithTenSigs.initialize(validatorContractWith10Signatures.address, tokenPOA20.address, oneEther, halfEther, minPerTx);
+      await tokenPOA20.transferOwnership(foreignBridgeWithTenSigs.address)
+
+      const recipient = accounts[11];
+      const value = oneEther;
+      const transactionHash = "0x806335163828a8eda675cff9c84fa6e6c7cf06bb44cc6ec832e42fe789d01415";
+      const {logs} = await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[0]}).should.be.fulfilled;
+      logs[0].event.should.be.equal("SignedForDeposit");
+      logs[0].args.should.be.deep.equal({
+        signer: authorities[0],
+        transactionHash
+      });
+      '0'.should.be.bignumber.equal(await tokenPOA20.totalSupply());
+      '0'.should.be.bignumber.equal(await tokenPOA20.balanceOf(recipient));
+      const secondDeposit = await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[1]}).should.be.fulfilled;
+
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[2]}).should.be.fulfilled;
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[3]}).should.be.fulfilled;
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[4]}).should.be.fulfilled;
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[5]}).should.be.fulfilled;
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[6]}).should.be.fulfilled;
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[7]}).should.be.fulfilled;
+      await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[8]}).should.be.fulfilled;
+      const tenthDeposit = await foreignBridgeWithTenSigs.deposit(recipient, value, transactionHash, {from: authoritiesAccs[9]}).should.be.fulfilled;
+      oneEther.should.be.bignumber.equal(await tokenPOA20.totalSupply());
+      oneEther.should.be.bignumber.equal(await tokenPOA20.balanceOf(recipient));
+      tenthDeposit.logs[1].event.should.be.equal("Deposit");
+      tenthDeposit.logs[1].args.should.be.deep.equal({
+        recipient,
+        value,
+        transactionHash
+      })
+    })
+
     it('should not allow to double submit', async () => {
       const recipient = accounts[5];
       const value = oneEther;
