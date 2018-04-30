@@ -308,5 +308,11 @@ contract('HomeBridge', async (accounts) => {
 
       await homeContract.setMinPerTx(2, {from: owner}).should.be.rejectedWith(ERROR_MSG);
     })
+
+    it('shoule allow to set gas limit withdraw relay', async () => {
+      const gasLimitWithdrawRelay = 10;
+      await homeContract.setGasLimitWithdrawRelay(gasLimitWithdrawRelay, {from: owner});
+      assert.equal( await homeContract.gasLimitWithdrawRelay.call(), gasLimitWithdrawRelay );
+    })
   })
 })

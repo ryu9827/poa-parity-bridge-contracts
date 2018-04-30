@@ -333,8 +333,25 @@ contract('ForeignBridge', async (accounts) => {
     it('#setMinPerTx allows to set only to owner and cannot be more than daily limit and should be less than maxPerTx', async () => {
       await foreignBridge.setMinPerTx(minPerTx, {from: authorities[0]}).should.be.rejectedWith(ERROR_MSG);
       await foreignBridge.setMinPerTx(minPerTx, {from: owner}).should.be.fulfilled;
-
       await foreignBridge.setMinPerTx(oneEther, {from: owner}).should.be.rejectedWith(ERROR_MSG);
+    })
+
+    it('#setGasLimits allows to set gas limit', async () => {
+      const gasLimitDepositRelay = 10;
+      const gasLimitWithdrawConfirm = 3;
+      await foreignBridge.setGasLimits(gasLimitDepositRelay, gasLimitWithdrawConfirm, {from:owner});
+      assert.equal(await foreignBridge.gasLimitDepositRelay.call(), gasLimitDepositRelay);
+      assert.equal(await foreignBridge.gasLimitWithdrawConfirm.call(), gasLimitWithdrawConfirm);
+    })
+
+    it('setForeignDailyLimit allows to set foreignDailyLimit', async () =>{
+      const foreignDailyLimit = 20;
+      await foreignBridge.setForeignDailyLimit(foreignDailyLimit);
+      assert.equal( await foreignBridge.foreignDailyLimit.call(), 20);
+      // const events = await getEvents(foreignBridge, {event: 'DailyLimit'});
+      // events[0].args.should.be.deep.equal({
+      //   newLimit: foreignDailyLimit
+      // })
     })
   })
 
