@@ -57,12 +57,13 @@ contract('ForeignBridge', async (accounts) => {
   })
 
   describe('#deposit', async () => {
-    let foreignBridge;
+    let foreignBridge,  foreignBridge_zero_erc677;
     beforeEach(async () => {
       token = await POA20.new("POA ERC20 Foundation", "POA20", 18);
       foreignBridge = await ForeignBridge.new();
       await foreignBridge.initialize(validatorContract.address, token.address, oneEther, halfEther, minPerTx);
       await token.transferOwnership(foreignBridge.address)
+    
     })
     it('should allow validator to deposit', async () => {
       const recipient = accounts[5];
@@ -188,6 +189,12 @@ contract('ForeignBridge', async (accounts) => {
       const transactionHash = "0x806335163828a8eda675cff9c84fa6e6c7cf06bb44cc6ec832e42fe789d01415";
       await foreignBridge.deposit(recipient, value, transactionHash, {from: accounts[7]}).should.be.rejectedWith(ERROR_MSG);
     })
+// 
+    // it('erc677token contract should not be 0x0 when initializing', async () => {
+    //   foreignBridge_zero_erc677 = await ForeignBridge.new();
+    //   await foreignBridge_zero_erc677.initialize(validatorContract.address, ZERO_ADDRESS, oneEther, halfEther, minPerTx);
+    //   await foreignBridge_zero_erc677.deposit(recipient,) 
+    // })
   })
 
   describe('#onTokenTransfer', async () => {
@@ -459,14 +466,21 @@ contract('ForeignBridge', async (accounts) => {
       await foreignBridge.claimTokens(tokenSecond.address, accounts[3], {from: owner});
       '0'.should.be.bignumber.equal(await tokenSecond.balanceOf(foreignBridge.address))
       '500'.should.be.bignumber.equal(await tokenSecond.balanceOf(accounts[3]))
-      
+    })
+
+    it('should transfer eth balance to the owner', async () => {
+      token = await POA20.new("POA ERC20 Foundation", "POA20", 18);
+      foreignBridge = await ForeignBridge.new();
+      await foreignBridge.initialize(validatorContract.address, token.address, oneEther, halfEther, minPerTx);
+      await token.transferOwnership(foreignBridge.address)
+
       await assertRevert(foreignBridge.claimTokens(foreignBridge.address, ZERO_ADDRESS, {from: owner} )) ;
-  
+      
       let ethBalanceOfAccount_1 = web3.eth.getBalance(accounts[1]).toNumber();
       let ethBalanceOfContract  = web3.eth.getBalance(foreignBridge.address).toNumber();
-      web3.eth.sendTransaction({from: accounts[5], to: foreignBridge.address, value: halfEther *10 });    
-      await foreignBridge.claimTokens(ZERO_ADDRESS, accounts[1], { from: owner});
-      assert.equal( web3.eth.getBalance(accounts[1]).toNumber() , ethBalanceOfAccount_1 + halfEther *10 )
+      web3.eth.sendTransaction({from: accounts[5], to: foreignBridge.address, value: halfEther });    
+      await foreignBridge.claimTokens(ZERO_ADDRESS, accounts[1],{from:owner});      
+      assert.equal( web3.eth.getBalance(accounts[1]).toNumber() , ethBalanceOfAccount_1 + halfEther.toNumber() )
     })
   })
 })

@@ -119,9 +119,9 @@ contract('POA20', async (accounts) => {
 
       let ethBalanceOfAccount_1 = web3.eth.getBalance(accounts[1]).toNumber();
       let ethBalanceOfContract  = web3.eth.getBalance(token.address).toNumber();
-      web3.eth.sendTransaction({from: accounts[5], to: token.address, value: halfEther *10 });    
+      await web3.eth.sendTransaction({from: accounts[5], to: token.address, value: halfEther });    
       await token.claimTokens(ZERO_ADDRESS, accounts[1], { from: owner});
-      assert.equal( web3.eth.getBalance(accounts[1]).toNumber() , ethBalanceOfAccount_1 + halfEther *10 )
+      assert.equal( web3.eth.getBalance(accounts[1]).toNumber() , ethBalanceOfAccount_1 + halfEther.toNumber() )
     })
   })
 })
