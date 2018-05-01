@@ -12,5 +12,6 @@ install:
 before_script:
   - npm run gana
   - sleep 5
+  
 script:
   - truffle test
