@@ -4,14 +4,13 @@ group: beta
 language: node_js
 node_js:
   - "9"
-cache:
-  yarn: true
-env:
-  - SOLIDITY_COVERAGE=false
-  - SOLIDITY_COVERAGE=true
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: SOLIDITY_COVERAGE=true
+install:
+  - npm install -g truffle
+  - npm install -g ethereumjs-testrpc
+  - npm install --save-dev solidity-coverage
+  - npm install
+before_script:
+  - npm run gana
+  - sleep
 script:
-  - npm test
+  - truffle test
